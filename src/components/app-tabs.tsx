@@ -19,6 +19,13 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="compass">
+        <NativeTabs.Trigger.Label>Compass</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf="safari.fill" md="explore"
+        />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
