@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "plant-based-barista",
-    "slug": "plant-based-barista",
+    "name": "Mountain Logbook",
+    "slug": "mountain-logbook",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "plantbasedbarista",
+    "scheme": "mountainlogbook",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
