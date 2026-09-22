@@ -2,8 +2,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { peaks } from '@/data/peaks';
 import { useClimbedStore } from '@/hooks/use-climbed-store';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { Button } from 'react-native';
+import { useMountainsViewStore } from '@/hooks/use-mountains-view-store';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Button, Platform } from 'react-native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomTabInset } from '@/constants/theme';
@@ -15,6 +16,18 @@ export function PeakDetail() {
 
   const climbed = useClimbedStore((state) => (peak ? state.isClimbed(peak.id) : false));
   const toggleClimbed = useClimbedStore((state) => state.toggleClimbed);
+  const showOnMap = useMountainsViewStore((state) => state.showOnMap);
+  const router = useRouter();
+
+  // The map only exists on iOS, and only peaks with coordinates are on it.
+  const canShowOnMap = Platform.OS === 'ios' && peak?.latitude != null && peak?.longitude != null;
+
+  const viewOnMap = () => {
+    if (!peak) return;
+    showOnMap(peak.id);
+    // Goes back to the Mountains screen, also switching tabs when opened from the Profile stack.
+    router.navigate('/(index)');
+  };
 
   const insets = useSafeAreaInsets();
 
@@ -58,6 +71,7 @@ export function PeakDetail() {
 
       {!!peak && (
         <ThemedView style={{ marginTop: 'auto', padding: 16, paddingBottom: insets.bottom + BottomTabInset, }}>
+          {canShowOnMap && <Button title="View on map" onPress={viewOnMap} />}
           <Button
             title={climbed ? 'Climbed ✓' : 'Mark as climbed'}
             onPress={() => toggleClimbed(peak.id)}

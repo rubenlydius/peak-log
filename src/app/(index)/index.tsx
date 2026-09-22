@@ -1,25 +1,22 @@
+import { PeakMap } from '@/components/peak-map';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { formatMeters, Peak, peaks } from '@/data/peaks';
+import { Spacing } from '@/constants/theme';
+import { formatMeters, Peak } from '@/data/peaks';
 import { useClimbedStore } from '@/hooks/use-climbed-store';
-import {
-  isHeightFilterActive,
-  isPeakFiltersActive,
-  usePeakFiltersStore,
-} from '@/hooks/use-peak-filters';
+import { useMountainsViewStore, ViewMode } from '@/hooks/use-mountains-view-store';
+import { isPeakFiltersActive, useFilteredPeaks, usePeakFiltersStore } from '@/hooks/use-peak-filters';
 import { useTheme } from '@/hooks/use-theme';
 
 import { FlashList } from '@shopify/flash-list';
 import { Link, Stack, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useMemo, useState } from 'react';
-import { Pressable, TextInput } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, TextInput } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Lowercase without accents, so "monch" finds "Mönch".
-const normalize = (text: string) =>
-  text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-
-const searchableNames = new Map(peaks.map((peak) => [peak.id, normalize(peak.name)]));
+// Leaves room below the last row, so the view mode button doesn't cover it.
+const VIEW_MODE_BUTTON_SPACE = 64;
 
 const PeakRow = ({ item }: { item: Peak }) => {
   const theme = useTheme();
@@ -76,41 +73,16 @@ const SearchBar = ({ query, onChangeQuery }: { query: string; onChangeQuery: (qu
   );
 };
 
-const PeakList = ({ query }: { query: string }) => {
-  const climbedIds = useClimbedStore((state) => state.climbedIds);
-  const filters = usePeakFiltersStore();
-
-  const filteredPeaks = useMemo(() => {
-    const heightActive = isHeightFilterActive(filters);
-    const search = normalize(query);
-
-    return peaks.filter((peak) => {
-      if (search && !searchableNames.get(peak.id)!.includes(search)) return false;
-      if (filters.climbed === 'climbed' && !climbedIds.includes(peak.id)) return false;
-      if (filters.climbed === 'unclimbed' && climbedIds.includes(peak.id)) return false;
-      if (heightActive) {
-        // Peaks without a known height can't satisfy a narrowed height range.
-        if (peak.meters === null) return false;
-        if (peak.meters < filters.minMeters || peak.meters > filters.maxMeters) return false;
-      }
-      if (
-        filters.countries.length > 0 &&
-        !peak.countries.some((country) => filters.countries.includes(country))
-      ) {
-        return false;
-      }
-      return true;
-    });
-  }, [climbedIds, filters, query]);
-
+const PeakList = ({ peaks, query }: { peaks: Peak[]; query: string }) => {
   return (
     <FlashList
-      data={filteredPeaks}
+      data={peaks}
       keyExtractor={(item) => String(item.id)}
       contentInsetAdjustmentBehavior="automatic"
       renderItem={({ item }) => <PeakRow item={item} />}
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
+      ListFooterComponent={<ThemedView style={{ height: VIEW_MODE_BUTTON_SPACE }} />}
       ListEmptyComponent={
         <ThemedView style={{ padding: 16 }}>
           <ThemedText themeColor="textSecondary">
@@ -160,9 +132,40 @@ const SearchButton = ({ active, onPress }: { active: boolean; onPress: () => voi
   );
 };
 
+const ViewModeButton = ({ mode, onPress }: { mode: ViewMode; onPress: () => void }) => {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  // The button shows the view it switches to.
+  const showsMap = mode === 'list';
+
+  return (
+    <ThemedView
+      pointerEvents="box-none"
+      style={[styles.viewModeContainer, { bottom: insets.bottom + Spacing.three }]}>
+      <Pressable onPress={onPress}>
+        <ThemedView type="backgroundElement" style={styles.viewModeButton}>
+          <SymbolView
+            name={{
+              ios: showsMap ? 'map' : 'list.bullet',
+              android: showsMap ? 'map' : 'list',
+              web: showsMap ? 'map' : 'list',
+            }}
+            tintColor={theme.text}
+            size={18}
+          />
+          <ThemedText type="smallBold">{showsMap ? 'Map' : 'List'}</ThemedText>
+        </ThemedView>
+      </Pressable>
+    </ThemedView>
+  );
+};
+
 export default function HomeScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [query, setQuery] = useState('');
+  const viewMode = useMountainsViewStore((state) => state.viewMode);
+  const setViewMode = useMountainsViewStore((state) => state.setViewMode);
+  const filteredPeaks = useFilteredPeaks(query);
 
   const toggleSearch = () => {
     // Closing the search also clears it, so the full list comes back.
@@ -180,7 +183,34 @@ export default function HomeScreen() {
         }}
       />
       {searchVisible && <SearchBar query={query} onChangeQuery={setQuery} />}
-      <PeakList query={query} />
+      {viewMode === 'list' ? (
+        <PeakList peaks={filteredPeaks} query={query} />
+      ) : (
+        <PeakMap peaks={filteredPeaks} />
+      )}
+      <ViewModeButton
+        mode={viewMode}
+        onPress={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}
+      />
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  viewModeContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  viewModeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.two + Spacing.one,
+    paddingHorizontal: Spacing.three,
+    borderRadius: 999,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+  },
+});
