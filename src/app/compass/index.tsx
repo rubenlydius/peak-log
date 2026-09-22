@@ -34,7 +34,7 @@ export default function CompassScreen() {
 
       {available === false ? (
         <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
-          The magnetometer and accelerometer aren't available on this device.
+          The magnetometer and accelerometer aren&apos;t available on this device.
         </ThemedText>
       ) : (
         <>
@@ -77,7 +77,7 @@ export default function CompassScreen() {
           </View>
 
           <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
-            Keep your phone roughly level, with the top edge pointing where you're heading.
+            Keep your phone roughly level, with the top edge pointing where you&apos;re heading.
           </ThemedText>
         </>
       )}
