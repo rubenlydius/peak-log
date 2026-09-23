@@ -3,7 +3,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { formatMeters, Peak } from '@/data/peaks';
-import { useClimbedStore } from '@/hooks/use-climbed-store';
+import { useClimbedPeakIds } from '@/hooks/use-logbook-store';
 import { useMountainsViewStore, ViewMode } from '@/hooks/use-mountains-view-store';
 import { isPeakFiltersActive, useFilteredPeaks, usePeakFiltersStore } from '@/hooks/use-peak-filters';
 import { useTheme } from '@/hooks/use-theme';
@@ -20,7 +20,7 @@ const VIEW_MODE_BUTTON_SPACE = 64;
 
 const PeakRow = ({ item }: { item: Peak }) => {
   const theme = useTheme();
-  const climbed = useClimbedStore((state) => state.isClimbed(item.id));
+  const climbed = useClimbedPeakIds().has(item.id);
 
   return (
     <Link href={`/(index)/${item.id}`}>
@@ -61,6 +61,7 @@ const SearchBar = ({ query, onChangeQuery }: { query: string; onChangeQuery: (qu
           value={query}
           onChangeText={onChangeQuery}
           placeholder="Search mountains"
+          autoCapitalize="none"
           placeholderTextColor={theme.textSecondary}
           autoFocus
           autoCorrect={false}

@@ -151,6 +151,7 @@ export default function FiltersScreen() {
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Search countries"
+                autoCapitalize="none"
                 placeholderTextColor={theme.textSecondary}
                 style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
               />

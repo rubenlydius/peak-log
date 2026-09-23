@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { formatMeters, Peak, peaks } from '@/data/peaks';
-import { useClimbedStore } from '@/hooks/use-climbed-store';
+import { useClimbedPeakIds, useLogbookStore } from '@/hooks/use-logbook-store';
 import { useTheme } from '@/hooks/use-theme';
 
 import { Link, Stack } from 'expo-router';
@@ -111,10 +111,10 @@ const CheckRow = ({ peak, climbed, subtitle }: { peak: Peak; climbed: boolean; s
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const climbedIds = useClimbedStore((state) => state.climbedIds);
+  const climbedSet = useClimbedPeakIds();
+  const ascentCount = useLogbookStore((state) => state.ascents.length);
 
   const stats = useMemo(() => {
-    const climbedSet = new Set(climbedIds);
     // `peaks` is sorted by height, so this list is too.
     const climbed = peaks.filter((peak) => climbedSet.has(peak.id));
 
@@ -130,7 +130,7 @@ export default function ProfileScreen() {
         total: PEAKS_PER_CONTINENT.get(continent)!,
       })),
     };
-  }, [climbedIds]);
+  }, [climbedSet]);
 
   const summitCount = CONTINENT_HIGH_POINTS.filter((peak) => stats.climbedSet.has(peak.id)).length;
 
@@ -148,7 +148,7 @@ export default function ProfileScreen() {
           <ThemedView type="backgroundElement" style={styles.tile}>
             <ThemedText type="smallBold">No peaks climbed yet</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              Open a mountain and tap &quot;Mark as climbed&quot; to start your logbook.
+              Open a mountain and tap &quot;Log a climb&quot; to start your logbook.
             </ThemedText>
           </ThemedView>
         )}
@@ -157,7 +157,7 @@ export default function ProfileScreen() {
           <StatTile
             label="Peaks climbed"
             value={stats.climbed.length.toLocaleString('en-US')}
-            detail={`of ${peaks.length.toLocaleString('en-US')}`}
+            detail={`${ascentCount.toLocaleString('en-US')} climb${ascentCount === 1 ? '' : 's'} logged`}
           />
           <StatTile
             label="Highest peak"

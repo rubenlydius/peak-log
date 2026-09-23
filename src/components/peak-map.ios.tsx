@@ -1,5 +1,5 @@
 import { formatMeters, Peak, peaks as allPeaks } from '@/data/peaks';
-import { useClimbedStore } from '@/hooks/use-climbed-store';
+import { useClimbedPeakIds } from '@/hooks/use-logbook-store';
 import { useMountainsViewStore } from '@/hooks/use-mountains-view-store';
 
 import { Button, Host, HStack, Image, Popover, Rectangle, Text, VStack } from '@expo/ui/swift-ui';
@@ -55,8 +55,7 @@ const displayPriority = (
 export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
-  const climbedIds = useClimbedStore((state) => state.climbedIds);
-  const climbedSet = useMemo(() => new Set(climbedIds), [climbedIds]);
+  const climbedSet = useClimbedPeakIds();
   const [selected, setSelected] = useState<{ peak: MappablePeak; point: Point } | null>(null);
 
   const focus = useMountainsViewStore((state) => state.focus);

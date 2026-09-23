@@ -38,6 +38,12 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to add photos to your summit logbook"
+        }
       ]
     ],
     "experiments": {

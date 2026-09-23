@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { create } from 'zustand';
 
 import { peaks } from '@/data/peaks';
-import { useClimbedStore } from '@/hooks/use-climbed-store';
+import { useClimbedPeakIds } from '@/hooks/use-logbook-store';
 
 export type ClimbedFilter = 'all' | 'climbed' | 'unclimbed';
 
@@ -59,7 +59,7 @@ const searchableNames = new Map(peaks.map((peak) => [peak.id, normalize(peak.nam
 
 /** The peaks matching the search query and the active filters, shared by the list and the map. */
 export const useFilteredPeaks = (query: string) => {
-  const climbedIds = useClimbedStore((state) => state.climbedIds);
+  const climbedIds = useClimbedPeakIds();
   const filters = usePeakFiltersStore();
 
   return useMemo(() => {
@@ -68,8 +68,8 @@ export const useFilteredPeaks = (query: string) => {
 
     return peaks.filter((peak) => {
       if (search && !searchableNames.get(peak.id)!.includes(search)) return false;
-      if (filters.climbed === 'climbed' && !climbedIds.includes(peak.id)) return false;
-      if (filters.climbed === 'unclimbed' && climbedIds.includes(peak.id)) return false;
+      if (filters.climbed === 'climbed' && !climbedIds.has(peak.id)) return false;
+      if (filters.climbed === 'unclimbed' && climbedIds.has(peak.id)) return false;
       if (heightActive) {
         // Peaks without a known height can't satisfy a narrowed height range.
         if (peak.meters === null) return false;
