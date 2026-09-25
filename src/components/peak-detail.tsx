@@ -6,9 +6,12 @@ import { Ascent, formatAscentDate, useAscentsForPeak } from '@/hooks/use-logbook
 import { useMountainsViewStore } from '@/hooks/use-mountains-view-store';
 import { useTheme } from '@/hooks/use-theme';
 
+import { PhotoViewer } from '@/components/photo-viewer';
+
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter, useSegments } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -21,7 +24,15 @@ const Field = ({ label, children }: { label: string; children: React.ReactNode }
   </ThemedView>
 );
 
-const AscentCard = ({ ascent, onPress }: { ascent: Ascent; onPress: () => void }) => {
+const AscentCard = ({
+  ascent,
+  onPress,
+  onPhotoPress,
+}: {
+  ascent: Ascent;
+  onPress: () => void;
+  onPhotoPress: (uri: string) => void;
+}) => {
   const theme = useTheme();
 
   return (
@@ -45,7 +56,9 @@ const AscentCard = ({ ascent, onPress }: { ascent: Ascent; onPress: () => void }
         {ascent.photoUris.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoRow}>
             {ascent.photoUris.map((uri) => (
-              <Image key={uri} source={{ uri }} style={styles.photo} contentFit="cover" />
+              <Pressable key={uri} onPress={() => onPhotoPress(uri)}>
+                <Image source={{ uri }} style={styles.photo} contentFit="cover" />
+              </Pressable>
             ))}
           </ScrollView>
         )}
@@ -61,6 +74,7 @@ export function PeakDetail() {
 
   const theme = useTheme();
   const ascents = useAscentsForPeak(peak?.id);
+  const [fullScreenPhoto, setFullScreenPhoto] = useState<string | null>(null);
   const showOnMap = useMountainsViewStore((state) => state.showOnMap);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -139,7 +153,12 @@ export function PeakDetail() {
             )}
 
             {ascents.map((ascent) => (
-              <AscentCard key={ascent.id} ascent={ascent} onPress={() => openForm(ascent.id)} />
+              <AscentCard
+                key={ascent.id}
+                ascent={ascent}
+                onPress={() => openForm(ascent.id)}
+                onPhotoPress={setFullScreenPhoto}
+              />
             ))}
 
             <Pressable onPress={() => openForm()}>
@@ -152,6 +171,8 @@ export function PeakDetail() {
           </ThemedView>
         )}
       </ScrollView>
+
+      <PhotoViewer uri={fullScreenPhoto} onClose={() => setFullScreenPhoto(null)} />
     </ThemedView>
   );
 }

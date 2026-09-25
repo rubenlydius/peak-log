@@ -4,13 +4,14 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useCompassHeading } from '@/hooks/use-compass-heading';
+import { isDevLocationEnabled, useDevLocationStore } from '@/hooks/use-dev-location';
 import { useDeviceLocation } from '@/hooks/use-device-location';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDistance } from '@/utils/geo';
 
 import { Stack } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
@@ -33,6 +34,20 @@ export default function CompassScreen() {
   const { available, heading, rotation } = useCompassHeading();
   const { status, coordinates } = useDeviceLocation();
   const [radiusKm, setRadiusKm] = useState(50);
+
+  // Development only: a long press on the dial steps through stand-in locations, so the mountain
+  // features can be tried out far away from any mountain.
+  const devOverride = useDevLocationStore((state) => state.override);
+  const cycleDevLocation = useDevLocationStore((state) => state.cycle);
+  const [devMessage, setDevMessage] = useState<string | null>(null);
+  const devMessageTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showNextDevLocation = () => {
+    const next = cycleDevLocation();
+    setDevMessage(next ? `Location set to ${next.name}` : 'Back to your own location');
+    if (devMessageTimeout.current) clearTimeout(devMessageTimeout.current);
+    devMessageTimeout.current = setTimeout(() => setDevMessage(null), 2500);
+  };
   const nearbyPeaks = useNearbyPeaks(coordinates, radiusKm);
 
   const dialStyle = useAnimatedStyle(() => ({
@@ -55,9 +70,14 @@ export default function CompassScreen() {
       {available === false ? (
         // Without a compass nothing can be laid out by direction, so the peaks stay a plain list.
         <>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
-            No compass on this device, so the mountains around you are listed by distance.
-          </ThemedText>
+          {/* Long-pressable as well, so the development location switch stays reachable here. */}
+          <Pressable
+            onLongPress={isDevLocationEnabled ? showNextDevLocation : undefined}
+            delayLongPress={1500}>
+            <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
+              No compass on this device, so the mountains around you are listed by distance.
+            </ThemedText>
+          </Pressable>
           <NearbyPeaksList nearbyPeaks={nearbyPeaks} rotation={null} emptyMessage={emptyMessage} />
         </>
       ) : (
@@ -71,7 +91,10 @@ export default function CompassScreen() {
 
       {available !== false && (
         <View style={styles.compass}>
-          <View style={styles.dialWrapper}>
+          <Pressable
+            onLongPress={isDevLocationEnabled ? showNextDevLocation : undefined}
+            delayLongPress={1500}
+            style={styles.dialWrapper}>
             <View style={[styles.pointer, { borderTopColor: NORTH_COLOR }]} />
             <Animated.View style={[styles.dial, { borderColor: theme.textSecondary }, dialStyle]}>
               {TICK_ANGLES.map((angle) => (
@@ -97,7 +120,7 @@ export default function CompassScreen() {
                 </View>
               ))}
             </Animated.View>
-          </View>
+          </Pressable>
 
           <View style={styles.readout}>
             <ThemedText type="subtitle">
@@ -112,8 +135,19 @@ export default function CompassScreen() {
         </View>
       )}
 
+      {!!devMessage && (
+        <ThemedView type="backgroundSelected" style={styles.devMessage}>
+          <ThemedText type="smallBold">{devMessage}</ThemedText>
+        </ThemedView>
+      )}
+
       {/* The tab bar floats over the screen, so the slider keeps clear of it. */}
       <View style={{ paddingBottom: insets.bottom + BottomTabInset }}>
+        {!!devOverride && (
+          <ThemedText type="smallBold" themeColor="textSecondary" style={styles.devBadge}>
+            Standing in {devOverride.name} (dev)
+          </ThemedText>
+        )}
         <RadiusSlider radiusKm={radiusKm} onChange={setRadiusKm} />
       </View>
     </ThemedView>
@@ -169,5 +203,17 @@ const styles = StyleSheet.create({
   message: {
     textAlign: 'center',
     padding: Spacing.three,
+  },
+  devBadge: {
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.one,
+  },
+  devMessage: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: Spacing.three,
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    borderRadius: 999,
   },
 });

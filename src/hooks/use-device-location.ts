@@ -2,6 +2,7 @@ import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
+import { isDevLocationEnabled, useDevLocationStore } from '@/hooks/use-dev-location';
 import { Coordinates } from '@/utils/geo';
 
 export type LocationStatus = 'pending' | 'granted' | 'denied' | 'unavailable';
@@ -15,6 +16,7 @@ export type LocationStatus = 'pending' | 'granted' | 'denied' | 'unavailable';
 export function useDeviceLocation() {
   const [status, setStatus] = useState<LocationStatus>('pending');
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  const override = useDevLocationStore((state) => state.override);
 
   useFocusEffect(
     useCallback(() => {
@@ -51,6 +53,11 @@ export function useDeviceLocation() {
       };
     }, []),
   );
+
+  // While a development stand-in is picked, everything downstream sees that position instead.
+  if (isDevLocationEnabled && override) {
+    return { status: 'granted' as LocationStatus, coordinates: override.coordinates };
+  }
 
   return { status, coordinates };
 }
