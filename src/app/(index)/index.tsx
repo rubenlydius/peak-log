@@ -25,7 +25,11 @@ const PeakRow = ({ item }: { item: Peak }) => {
   return (
     <Link href={`/(index)/${item.id}`}>
       <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 8 }}>
-        <ThemedView style={{ width: 20, alignItems: 'center' }}>
+        <ThemedView style={{ flex: 1 }}>
+          <ThemedText type="smallBold">{item.name}</ThemedText>
+          <ThemedText type="small">{item.countries.join(', ') || item.continent}</ThemedText>
+        </ThemedView>
+        <ThemedView style={{ width: 20, alignItems: 'center', paddingRight: 8 }}>
           {climbed && (
             <SymbolView
               name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
@@ -33,10 +37,6 @@ const PeakRow = ({ item }: { item: Peak }) => {
               size={18}
             />
           )}
-        </ThemedView>
-        <ThemedView style={{ flex: 1 }}>
-          <ThemedText type="smallBold">{item.name}</ThemedText>
-          <ThemedText type="small">{item.countries.join(', ') || item.continent}</ThemedText>
         </ThemedView>
         <ThemedText type="small">{formatMeters(item)}</ThemedText>
       </ThemedView>

@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { formatMeters, peaks } from '@/data/peaks';
 import { useClimbedPeakIds } from '@/hooks/use-logbook-store';
 import { useTheme } from '@/hooks/use-theme';
@@ -12,7 +12,6 @@ import { Link } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useMemo } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 export const RADIUS_MIN_KM = 5;
@@ -25,7 +24,7 @@ const peaksWithCoordinates = peaks.filter(
   (peak): peak is LocatedPeak => peak.latitude !== null && peak.longitude !== null,
 );
 
-type NearbyPeak = LocatedPeak & { distance: number; bearing: number };
+export type NearbyPeak = LocatedPeak & { distance: number; bearing: number };
 
 /** An arrow pointing at the peak, turning with the phone just like the compass dial. */
 const BearingArrow = ({ bearing, rotation }: { bearing: number; rotation: SharedValue<number> }) => {
@@ -136,14 +135,13 @@ export const NearbyPeaksList = ({
   rotation: SharedValue<number> | null;
   emptyMessage: string;
 }) => {
-  const insets = useSafeAreaInsets();
-
   return (
     <FlashList
       data={nearbyPeaks}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <NearbyRow peak={item} rotation={rotation} />}
-      contentContainerStyle={{ paddingBottom: insets.bottom + BottomTabInset + Spacing.three }}
+      // The range slider sits below this list and keeps itself clear of the tab bar.
+      contentContainerStyle={{ paddingBottom: Spacing.three }}
       ListEmptyComponent={
         <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
           {emptyMessage}

@@ -1,11 +1,8 @@
-import {
-  NearbyPeaksList,
-  RadiusSlider,
-  useNearbyPeaks,
-} from '@/components/nearby-peaks';
+import { HorizonStrip } from '@/components/horizon-strip';
+import { NearbyPeaksList, RadiusSlider, useNearbyPeaks } from '@/components/nearby-peaks';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useCompassHeading } from '@/hooks/use-compass-heading';
 import { useDeviceLocation } from '@/hooks/use-device-location';
 import { useTheme } from '@/hooks/use-theme';
@@ -14,9 +11,10 @@ import { formatDistance } from '@/utils/geo';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
-const DIAL_SIZE = 180;
+const DIAL_SIZE = 150;
 const NORTH_COLOR = '#E5484D';
 const CARDINALS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 const TICK_ANGLES = Array.from({ length: 36 }, (_, i) => i * 10);
@@ -31,6 +29,7 @@ const cardinalFor = (heading: number) => CARDINALS[Math.round(heading / 45) % 8]
 
 export default function CompassScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { available, heading, rotation } = useCompassHeading();
   const { status, coordinates } = useDeviceLocation();
   const [radiusKm, setRadiusKm] = useState(50);
@@ -54,16 +53,24 @@ export default function CompassScreen() {
       <Stack.Screen options={{ title: 'Compass' }} />
 
       {available === false ? (
-        <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
-          No compass on this device, so only the distance to each mountain is shown.
-        </ThemedText>
+        // Without a compass nothing can be laid out by direction, so the peaks stay a plain list.
+        <>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.message}>
+            No compass on this device, so the mountains around you are listed by distance.
+          </ThemedText>
+          <NearbyPeaksList nearbyPeaks={nearbyPeaks} rotation={null} emptyMessage={emptyMessage} />
+        </>
       ) : (
-        <View style={styles.compass}>
-          <View style={styles.readout}>
-            <ThemedText type="title">{heading}°</ThemedText>
-            <ThemedText type="subtitle">{cardinalFor(heading)}</ThemedText>
-          </View>
+        <HorizonStrip
+          nearbyPeaks={nearbyPeaks}
+          rotation={rotation}
+          radiusKm={radiusKm}
+          message={nearbyPeaks.length ? undefined : emptyMessage}
+        />
+      )}
 
+      {available !== false && (
+        <View style={styles.compass}>
           <View style={styles.dialWrapper}>
             <View style={[styles.pointer, { borderTopColor: NORTH_COLOR }]} />
             <Animated.View style={[styles.dial, { borderColor: theme.textSecondary }, dialStyle]}>
@@ -91,35 +98,39 @@ export default function CompassScreen() {
               ))}
             </Animated.View>
           </View>
+
+          <View style={styles.readout}>
+            <ThemedText type="subtitle">
+              {heading}° {cardinalFor(heading)}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {nearbyPeaks.length
+                ? `${nearbyPeaks.length} mountain${nearbyPeaks.length === 1 ? '' : 's'} within ${formatDistance(radiusKm)}`
+                : 'No mountains in range'}
+            </ThemedText>
+          </View>
         </View>
       )}
 
-      <RadiusSlider radiusKm={radiusKm} onChange={setRadiusKm} />
-
-      <ThemedText type="smallBold" themeColor="textSecondary" style={styles.listHeader}>
-        {nearbyPeaks.length
-          ? `${nearbyPeaks.length} mountain${nearbyPeaks.length === 1 ? '' : 's'} within ${formatDistance(radiusKm)}`
-          : 'Nearby mountains'}
-      </ThemedText>
-
-      <NearbyPeaksList
-        nearbyPeaks={nearbyPeaks}
-        rotation={available === false ? null : rotation}
-        emptyMessage={emptyMessage}
-      />
+      {/* The tab bar floats over the screen, so the slider keeps clear of it. */}
+      <View style={{ paddingBottom: insets.bottom + BottomTabInset }}>
+        <RadiusSlider radiusKm={radiusKm} onChange={setRadiusKm} />
+      </View>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   compass: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.four,
+    gap: Spacing.four,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three,
   },
   readout: {
-    alignItems: 'center',
+    flex: 1,
+    gap: Spacing.one,
   },
   dialWrapper: {
     alignItems: 'center',
@@ -154,10 +165,6 @@ const styles = StyleSheet.create({
   },
   label: {
     marginTop: 12,
-  },
-  listHeader: {
-    paddingHorizontal: Spacing.three,
-    paddingBottom: Spacing.two,
   },
   message: {
     textAlign: 'center',

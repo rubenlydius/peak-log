@@ -59,6 +59,7 @@ export function PeakDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const peak = peaks.find((item) => item.id === id);
 
+  const theme = useTheme();
   const ascents = useAscentsForPeak(peak?.id);
   const showOnMap = useMountainsViewStore((state) => state.showOnMap);
   const router = useRouter();
@@ -114,7 +115,14 @@ export function PeakDetail() {
 
         {canShowOnMap && (
           <Pressable onPress={viewOnMap}>
-            <ThemedText type="link">View on map</ThemedText>
+            <ThemedView type="backgroundElement" style={styles.mapButton}>
+              <SymbolView
+                name={{ ios: 'map', android: 'map', web: 'map' }}
+                tintColor={theme.text}
+                size={18}
+              />
+              <ThemedText type="smallBold">View on map</ThemedText>
+            </ThemedView>
           </Pressable>
         )}
 
@@ -171,6 +179,14 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: Spacing.two,
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.three,
+    borderRadius: Spacing.three,
   },
   logButton: {
     alignItems: 'center',
