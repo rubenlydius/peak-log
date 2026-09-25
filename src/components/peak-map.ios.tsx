@@ -1,12 +1,18 @@
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
 import { formatMeters, Peak, peaks as allPeaks } from '@/data/peaks';
+import { useDeviceLocation } from '@/hooks/use-device-location';
 import { useClimbedPeakIds } from '@/hooks/use-logbook-store';
 import { useMountainsViewStore } from '@/hooks/use-mountains-view-store';
+import { useTheme } from '@/hooks/use-theme';
 
 import { Button, Host, HStack, Image, Popover, Rectangle, Text, VStack } from '@expo/ui/swift-ui';
 import { buttonStyle, font, foregroundStyle, frame, opacity, padding } from '@expo/ui/swift-ui/modifiers';
 import { useIsFocused, useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, type MapMarkerProps, type Point } from 'react-native-maps';
 
 type MappablePeak = Peak & { latitude: number; longitude: number };
@@ -24,6 +30,8 @@ const INITIAL_REGION = {
 
 // How far the map zooms in on a peak opened with "View on map", in degrees.
 const FOCUSED_DELTA = 0.5;
+// The button below zooms in less far, since what's around you matters more than the exact spot.
+const MY_LOCATION_DELTA = 0.2;
 
 const focusedRegion = (peak: MappablePeak) => ({
   latitude: peak.latitude,
@@ -54,8 +62,11 @@ const displayPriority = (
 
 export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
   const router = useRouter();
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
   const climbedSet = useClimbedPeakIds();
+  const { status: locationStatus, coordinates } = useDeviceLocation();
   const [selected, setSelected] = useState<{ peak: MappablePeak; point: Point } | null>(null);
 
   const focus = useMountainsViewStore((state) => state.focus);
@@ -142,6 +153,7 @@ export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
         initialRegion={initialRegion}
         showsCompass
         showsScale
+        showsUserLocation={locationStatus === 'granted'}
         onMapReady={() => setIsMapReady(true)}
         onRegionChangeComplete={openPendingFocus}
         onMarkerPress={(event) => {
@@ -150,6 +162,26 @@ export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
         }}>
         {markers}
       </MapView>
+
+      {!!coordinates && (
+        <Pressable
+          onPress={() =>
+            mapRef.current?.animateToRegion({
+              ...coordinates,
+              latitudeDelta: MY_LOCATION_DELTA,
+              longitudeDelta: MY_LOCATION_DELTA,
+            })
+          }
+          style={[styles.myLocation, { bottom: insets.bottom + Spacing.three }]}>
+          <ThemedView type="backgroundElement" style={styles.myLocationButton}>
+            <SymbolView
+              name={{ ios: 'location.fill', android: 'my_location', web: 'my_location' }}
+              tintColor={theme.text}
+              size={18}
+            />
+          </ThemedView>
+        </Pressable>
+      )}
 
       {/* Invisible anchor at the top of the tapped marker that the popover points to. */}
       {selected && (
@@ -195,6 +227,18 @@ export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
 };
 
 const styles = StyleSheet.create({
+  myLocation: {
+    position: 'absolute',
+    right: Spacing.three,
+  },
+  myLocationButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+  },
   anchor: {
     position: 'absolute',
   },
