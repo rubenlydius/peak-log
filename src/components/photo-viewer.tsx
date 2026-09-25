@@ -5,12 +5,12 @@ import { Modal, Pressable, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 const UPDATE_INTERVAL_MS = 50;
-// Keep the tilt small: it should feel like the photo sits behind glass, not like a toy.
-const MAX_TILT_DEGREES = 6;
-// How much phone rotation reaches that maximum; a quarter turn of the wrist is plenty.
-const DEGREES_FOR_MAX_TILT = 25;
-// A little movement with the tilt sells the depth, in points.
-const MAX_SHIFT = 8;
+// How far the photo leans at most. Higher is more playful, lower feels like glass.
+const MAX_TILT_DEGREES = 14;
+// How far you turn the phone to reach that lean. Lower makes it react sooner.
+const DEGREES_FOR_MAX_TILT = 18;
+// How far the photo drifts sideways with the lean, in points, which sells the depth.
+const MAX_SHIFT = 18;
 
 const toDegrees = (radians: number) => (radians * 180) / Math.PI;
 
