@@ -65,7 +65,7 @@ export function PeakDetail() {
   const insets = useSafeAreaInsets();
   // The same screen lives in two stacks, so the log form is opened in whichever one is showing.
   const segments = useSegments();
-  const stack = segments[0] === 'profile' ? '/profile' : '/(index)';
+  const stack = segments[0] === 'profile' || segments[0] === 'compass' ? `/${segments[0]}` : '/(index)';
 
   // The map only exists on iOS, and only peaks with coordinates are on it.
   const canShowOnMap = Platform.OS === 'ios' && peak?.latitude != null && peak?.longitude != null;
