@@ -1,6 +1,7 @@
 import { ThemedView } from '@/components/themed-view';
 import { BrandAccent, Spacing } from '@/constants/theme';
 import { formatMeters, Peak, peaks as allPeaks } from '@/data/peaks';
+import { isDevLocationEnabled, useDevLocationStore } from '@/hooks/use-dev-location';
 import { useDeviceLocation } from '@/hooks/use-device-location';
 import { useClimbedPeakIds } from '@/hooks/use-logbook-store';
 import { useMountainsViewStore } from '@/hooks/use-mountains-view-store';
@@ -68,6 +69,10 @@ export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
   const mapRef = useRef<MapView>(null);
   const climbedSet = useClimbedPeakIds();
   const { status: locationStatus, coordinates } = useDeviceLocation();
+  // iOS draws the blue dot from Core Location, which knows nothing about the development stand-in.
+  // Rather than show a dot contradicting the rest of the app, it is hidden while one is active.
+  const devOverride = useDevLocationStore((state) => state.override);
+  const showsUserLocation = locationStatus === 'granted' && !(isDevLocationEnabled && devOverride);
   const [selected, setSelected] = useState<{ peak: MappablePeak; point: Point } | null>(null);
 
   const focus = useMountainsViewStore((state) => state.focus);
@@ -156,7 +161,7 @@ export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
         initialRegion={initialRegion}
         showsCompass
         showsScale
-        showsUserLocation={locationStatus === 'granted'}
+        showsUserLocation={showsUserLocation}
         onMapReady={() => setIsMapReady(true)}
         onRegionChangeComplete={openPendingFocus}
         onMarkerPress={(event) => {
