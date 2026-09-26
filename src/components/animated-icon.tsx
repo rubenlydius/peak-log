@@ -33,7 +33,7 @@ export function AnimatedSplashOverlay() {
     },
   });
 
-  const image = <Image style={styles.image} source={require('@/assets/images/expo-logo.png')} />;
+  const image = <Image style={styles.image} source={require('@/assets/images/icon.png')} />;
 
   return animate ? (
     <Animated.View
@@ -128,8 +128,10 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   image: {
-    width: 76,
-    height: 71,
+    width: 160,
+    height: 160,
+    // Rounded like an app icon, so it looks like the icon lifting off the launch screen.
+    borderRadius: 36,
   },
   background: {
     borderRadius: 40,
@@ -140,7 +142,8 @@ const styles = StyleSheet.create({
   },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#208AEF',
+    // Matches the icon's own background, so the native launch screen and this overlay line up.
+    backgroundColor: '#7AC2CF',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,

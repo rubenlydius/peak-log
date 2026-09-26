@@ -1,14 +1,13 @@
 {
   "expo": {
-    "name": "Mountain Logbook",
-    "slug": "mountain-logbook",
+    "name": "Peak Log",
+    "slug": "peak-log",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mountainlogbook",
+    "scheme": "peaklog",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.rubenlydius.mountain-logbook"
     },
     "android": {
@@ -40,9 +39,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#7AC2CF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 160
         }
       ],
       [
