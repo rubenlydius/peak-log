@@ -132,7 +132,7 @@ export function PeakDetail() {
             <ThemedView type="backgroundElement" style={styles.mapButton}>
               <SymbolView
                 name={{ ios: 'map', android: 'map', web: 'map' }}
-                tintColor={theme.text}
+                tintColor={theme.accent}
                 size={18}
               />
               <ThemedText type="smallBold">View on map</ThemedText>

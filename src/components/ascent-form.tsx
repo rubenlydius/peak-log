@@ -151,7 +151,7 @@ export function AscentForm() {
           <ThemedText type="smallBold" themeColor="textSecondary">
             Date
           </ThemedText>
-          <Host matchContents>
+          <Host matchContents seedColor={theme.accent}>
             <DatePicker
               selection={date}
               displayedComponents={['date']}

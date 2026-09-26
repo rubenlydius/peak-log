@@ -1,5 +1,5 @@
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { BrandAccent, Spacing } from '@/constants/theme';
 import { formatMeters, Peak, peaks as allPeaks } from '@/data/peaks';
 import { useDeviceLocation } from '@/hooks/use-device-location';
 import { useClimbedPeakIds } from '@/hooks/use-logbook-store';
@@ -40,8 +40,9 @@ const focusedRegion = (peak: MappablePeak) => ({
   longitudeDelta: FOCUSED_DELTA,
 });
 
-const CLIMBED_TINT = '#34C759';
-const UNCLIMBED_TINT = '#208AEF';
+// The brand blue reads as "climbed"; the rest are a neutral slate so the map stays calm.
+const CLIMBED_TINT = BrandAccent;
+const UNCLIMBED_TINT = '#55606B';
 
 // A selected marker balloon is roughly this tall, so the popover arrow points at its top.
 const MARKER_HEIGHT = 56;

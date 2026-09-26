@@ -115,7 +115,7 @@ export function RangeSlider({ min, max, step, low, high, onChange, formatLabel =
           highX.set(((high - min) / (max - min)) * trackWidth);
         }}>
         <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]} />
-        <Animated.View style={[styles.range, { backgroundColor: theme.text }, rangeStyle]} />
+        <Animated.View style={[styles.range, { backgroundColor: theme.accent }, rangeStyle]} />
 
         <GestureDetector gesture={makeGesture('low')}>
           <Animated.View style={[styles.thumb, lowThumbStyle]} />

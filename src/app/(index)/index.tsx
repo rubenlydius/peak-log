@@ -12,7 +12,7 @@ import { FlashList } from '@shopify/flash-list';
 import { Link, Stack, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Leaves room below the last row, so the view mode button doesn't cover it.
@@ -24,20 +24,22 @@ const PeakRow = ({ item }: { item: Peak }) => {
 
   return (
     <Link href={`/(index)/${item.id}`}>
-      <ThemedView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 8 }}>
-        <ThemedView style={{ flex: 1 }}>
+      <ThemedView
+        type={climbed ? 'accentSurface' : 'background'}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 8 }}>
+        <View style={{ flex: 1 }}>
           <ThemedText type="smallBold">{item.name}</ThemedText>
           <ThemedText type="small">{item.countries.join(', ') || item.continent}</ThemedText>
-        </ThemedView>
-        <ThemedView style={{ width: 20, alignItems: 'center', paddingRight: 8 }}>
+        </View>
+        <View style={{ width: 20, alignItems: 'center', paddingRight: 8 }}>
           {climbed && (
             <SymbolView
               name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-              tintColor={theme.text}
+              tintColor={theme.accent}
               size={18}
             />
           )}
-        </ThemedView>
+        </View>
         <ThemedText type="small">{formatMeters(item)}</ThemedText>
       </ThemedView>
     </Link>

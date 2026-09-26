@@ -128,7 +128,7 @@ const PeakMarker = ({
           <View style={styles.markerContent}>
             <SymbolView
               name={{ ios: 'triangle.fill', android: 'change_history', web: 'change_history' }}
-              tintColor={climbed ? theme.text : theme.textSecondary}
+              tintColor={climbed ? theme.accent : theme.textSecondary}
               size={12}
             />
             <ThemedText type="smallBold" numberOfLines={1} style={styles.markerLabel}>

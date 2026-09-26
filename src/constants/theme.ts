@@ -7,6 +7,13 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+/**
+ * The app icon's blue. It sits on its own on the launch screen and on the map pins, where nothing
+ * needs to be read on top of it. Anywhere text or an icon has to stay legible, use the theme's
+ * `accent` instead: on white the brand blue is too pale to read.
+ */
+export const BrandAccent = '#7AC2CF';
+
 export const Colors = {
   light: {
     text: '#000000',
@@ -14,6 +21,10 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    /** A deeper version of the brand blue, dark enough to read on white. */
+    accent: '#2A7F8E',
+    /** A wash of the accent, for marking a row or a bar without shouting. */
+    accentSurface: '#E9F4F7',
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +32,8 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    accent: BrandAccent,
+    accentSurface: '#14272C',
   },
 } as const;
 

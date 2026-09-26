@@ -58,7 +58,7 @@ const ProgressRow = ({ label, count, total }: { label: string; count: number; to
           style={[
             styles.barFill,
             // Keep a sliver visible once something is climbed, even when the share rounds to ~0%.
-            { width: `${count ? Math.max((count / total) * 100, 2) : 0}%`, backgroundColor: theme.text },
+            { width: `${count ? Math.max((count / total) * 100, 2) : 0}%`, backgroundColor: theme.accent },
           ]}
         />
       </ThemedView>
@@ -90,7 +90,7 @@ const CheckRow = ({ peak, climbed, subtitle }: { peak: Peak; climbed: boolean; s
                   ? { ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }
                   : { ios: 'circle', android: 'radio_button_unchecked', web: 'radio_button_unchecked' }
               }
-              tintColor={climbed ? theme.text : theme.textSecondary}
+              tintColor={climbed ? theme.accent : theme.textSecondary}
               size={18}
             />
             <ThemedView style={{ flex: 1 }}>

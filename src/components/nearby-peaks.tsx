@@ -69,7 +69,7 @@ const NearbyRow = ({
               {climbed && (
                 <SymbolView
                   name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-                  tintColor={theme.text}
+                  tintColor={theme.accent}
                   size={14}
                 />
               )}
@@ -92,7 +92,10 @@ export const RadiusSlider = ({
 }: {
   radiusKm: number;
   onChange: (radiusKm: number) => void;
-}) => (
+}) => {
+  const theme = useTheme();
+
+  return (
   <ThemedView style={styles.sliderBlock}>
     <ThemedView style={styles.nameRow}>
       <ThemedText type="smallBold" themeColor="textSecondary">
@@ -101,7 +104,7 @@ export const RadiusSlider = ({
       <ThemedText type="smallBold">{formatDistance(radiusKm)}</ThemedText>
     </ThemedView>
     {/* A SwiftUI slider has no width of its own, so the host is sized instead of matching content. */}
-    <Host style={styles.slider}>
+    <Host style={styles.slider} seedColor={theme.accent}>
       <Slider
         value={radiusKm}
         min={RADIUS_MIN_KM}
@@ -111,7 +114,8 @@ export const RadiusSlider = ({
       />
     </Host>
   </ThemedView>
-);
+  );
+};
 
 /** The peaks within `radiusKm` of `coordinates`, nearest first. */
 export const useNearbyPeaks = (coordinates: Coordinates | null, radiusKm: number) =>
