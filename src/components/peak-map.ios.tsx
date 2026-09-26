@@ -47,9 +47,9 @@ const UNCLIMBED_TINT = '#55606B';
 // A selected marker balloon is roughly this tall, so the popover arrow points at its top.
 const MARKER_HEIGHT = 56;
 
-// Apple Maps hides pins that overlap, keeping the ones with the highest priority. Taller peaks and
-// the ones you climbed stay visible, so zooming out shows the famous summits instead of whichever
-// pin happens to be drawn first.
+// Apple Maps hides pins that overlap, keeping the ones with the highest priority. The peaks you
+// climbed are always kept, whatever their height, and after them the taller ones, so zooming out
+// shows your own summits and the famous ones instead of whichever pin happens to be drawn first.
 const HIGH_PRIORITY_METERS = 6000;
 const REQUIRED_PRIORITY_METERS = 8000;
 
@@ -135,6 +135,8 @@ export const PeakMap = ({ peaks }: { peaks: Peak[] }) => {
             coordinate={{ latitude: peak.latitude, longitude: peak.longitude }}
             pinColor={climbed ? CLIMBED_TINT : UNCLIMBED_TINT}
             displayPriority={displayPriority(peak, climbed)}
+            // Never hidden behind another pin either, so a climbed peak always stays readable.
+            zIndex={climbed ? 1 : 0}
           />
         );
       }),
