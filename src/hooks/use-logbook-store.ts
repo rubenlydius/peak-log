@@ -1,7 +1,25 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Coordinates } from '@/utils/geo';
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
+/**
+ * A workout from Apple Health attached to a climb. It is stored as a copy rather than as a
+ * reference, so the entry keeps its numbers even if the workout is later removed from Health.
+ */
+export interface AscentActivity {
+  /** HealthKit's identifier, so the same workout isn't attached to two climbs by accident. */
+  id: string;
+  type: string;
+  start: string;
+  durationSeconds: number;
+  distanceMeters?: number;
+  elevationMeters?: number;
+  energyKcal?: number;
+  /** The GPS track, thinned out. Missing for sources that don't sync routes, such as COROS. */
+  route?: Coordinates[];
+}
 
 /** One visit to a peak. The same peak can be climbed more than once, so each visit is its own entry. */
 export interface Ascent {
@@ -12,6 +30,8 @@ export interface Ascent {
   notes: string;
   /** Photos copied into the app's own folder; see `save-ascent-photo`. */
   photoUris: string[];
+  /** The workout this climb was recorded with, when one was attached. */
+  activity?: AscentActivity;
 }
 
 export type AscentDraft = Omit<Ascent, 'id'>;

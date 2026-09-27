@@ -55,6 +55,12 @@
         {
           "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to show which mountains are near you"
         }
+      ],
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Allow $(PRODUCT_NAME) to attach your hikes and walks to the climbs in your logbook"
+        }
       ]
     ],
     "experiments": {

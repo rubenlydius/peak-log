@@ -8,6 +8,8 @@ import { useTheme } from '@/hooks/use-theme';
 
 import { PhotoViewer } from '@/components/photo-viewer';
 
+import { workoutDetails } from '@/utils/format-activity';
+
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter, useSegments } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -46,6 +48,19 @@ const AscentCard = ({
             size={14}
           />
         </ThemedView>
+
+        {!!ascent.activity && (
+          <ThemedView type="backgroundElement" style={styles.activityRow}>
+            <SymbolView
+              name={{ ios: 'figure.hiking', android: 'hiking', web: 'hiking' }}
+              tintColor={theme.accent}
+              size={14}
+            />
+            <ThemedText type="small" themeColor="textSecondary">
+              {ascent.activity.type} · {workoutDetails(ascent.activity)}
+            </ThemedText>
+          </ThemedView>
+        )}
 
         {!!ascent.notes && (
           <ThemedText type="small" themeColor="textSecondary" numberOfLines={3}>
@@ -191,6 +206,11 @@ const styles = StyleSheet.create({
   ascentCard: {
     padding: Spacing.three,
     borderRadius: Spacing.three,
+    gap: Spacing.two,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.two,
   },
   photoRow: {

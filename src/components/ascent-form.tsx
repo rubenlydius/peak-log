@@ -2,9 +2,11 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { peaks } from '@/data/peaks';
-import { AscentDraft, toDateKey, useAscent, useLogbookStore } from '@/hooks/use-logbook-store';
+import { AscentActivity, AscentDraft, toDateKey, useAscent, useLogbookStore } from '@/hooks/use-logbook-store';
 import { useTheme } from '@/hooks/use-theme';
 import { deleteAscentPhoto, saveAscentPhoto } from '@/utils/ascent-photos';
+import { WorkoutPicker } from '@/components/workout-picker';
+import { formatWorkoutDate, workoutDetails } from '@/utils/format-activity';
 
 import { DatePicker, Host } from '@expo/ui/swift-ui';
 import { Image } from 'expo-image';
@@ -72,6 +74,15 @@ export function AscentForm() {
   const [date, setDate] = useState(() => new Date(existing?.date ? `${existing.date}T12:00:00` : Date.now()));
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [photoUris, setPhotoUris] = useState<string[]>(existing?.photoUris ?? []);
+  const [activity, setActivity] = useState<AscentActivity | undefined>(existing?.activity);
+  const [pickerVisible, setPickerVisible] = useState(false);
+
+  const attachActivity = (picked: AscentActivity) => {
+    setActivity(picked);
+    // The workout knows when the climb happened, so the date follows it.
+    setDate(new Date(picked.start));
+    setPickerVisible(false);
+  };
 
   const addPhotos = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -98,7 +109,13 @@ export function AscentForm() {
 
   const save = () => {
     if (!peak) return;
-    const draft: AscentDraft = { peakId: peak.id, date: toDateKey(date), notes: notes.trim(), photoUris };
+    const draft: AscentDraft = {
+      peakId: peak.id,
+      date: toDateKey(date),
+      notes: notes.trim(),
+      photoUris,
+      activity,
+    };
 
     if (existing) {
       // Photos removed while editing are only deleted once the change is kept.
@@ -162,6 +179,44 @@ export function AscentForm() {
 
         <ThemedView style={{ gap: Spacing.two }}>
           <ThemedText type="smallBold" themeColor="textSecondary">
+            Activity
+          </ThemedText>
+
+          {activity ? (
+            <ThemedView type="backgroundElement" style={styles.activity}>
+              <ThemedView type="backgroundElement" style={styles.activityHeader}>
+                <ThemedText type="smallBold">
+                  {activity.type} · {formatWorkoutDate(activity.start)}
+                </ThemedText>
+                <Pressable onPress={() => setActivity(undefined)}>
+                  <SymbolView
+                    name={{ ios: 'xmark', android: 'close', web: 'close' }}
+                    tintColor={theme.textSecondary}
+                    size={14}
+                  />
+                </Pressable>
+              </ThemedView>
+              <ThemedText type="small" themeColor="textSecondary">
+                {workoutDetails(activity)}
+                {activity.route ? ' · route' : ''}
+              </ThemedText>
+            </ThemedView>
+          ) : (
+            <Pressable onPress={() => setPickerVisible(true)}>
+              <ThemedView type="backgroundElement" style={styles.addActivity}>
+                <SymbolView
+                  name={{ ios: 'figure.hiking', android: 'hiking', web: 'hiking' }}
+                  tintColor={theme.accent}
+                  size={18}
+                />
+                <ThemedText type="smallBold">Add activity</ThemedText>
+              </ThemedView>
+            </Pressable>
+          )}
+        </ThemedView>
+
+        <ThemedView style={{ gap: Spacing.two }}>
+          <ThemedText type="smallBold" themeColor="textSecondary">
             Notes
           </ThemedText>
           <TextInput
@@ -193,6 +248,12 @@ export function AscentForm() {
           </Pressable>
         )}
       </ScrollView>
+
+      <WorkoutPicker
+        visible={pickerVisible}
+        onSelect={attachActivity}
+        onClose={() => setPickerVisible(false)}
+      />
     </ThemedView>
   );
 }
@@ -207,6 +268,25 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.two,
     padding: Spacing.three,
     textAlignVertical: 'top',
+  },
+  activity: {
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    gap: Spacing.one,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  addActivity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.three,
+    borderRadius: Spacing.three,
   },
   photoGrid: {
     flexDirection: 'row',
